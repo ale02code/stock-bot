@@ -1,0 +1,37 @@
+# Entorno virtual y archivos relacionados
+venv/
+Havenv/
+pyvenv.cfg
+Lib/
+Scripts/
+include/
+
+# Archivos de entorno y configuración sensible
+.env
+*.env
+config.py  # Solo si contiene credenciales
+
+# Archivos generados por Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de IDE y editores
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs y archivos temporales
+logs/
+*.log
+
+# Dependencias y builds
+*.egg-info/
+*.egg
+dist/
+build/
