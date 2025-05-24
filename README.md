@@ -19,19 +19,9 @@ This project is a simple stock analysis bot built in Python. It uses technical s
 
 ## 📁 Project Structure
 
-stock-bot/
-├── main.py
-├── config.py
-├── requirements.txt
-├── README.md
-├── strategies/
-│ ├── init.py
-│ └── rsi_strategy.py
-├── services/
-│ ├── analyzer.py
-│ └── email_sender.py
-logs
-└── venv/ # Virtual environment
+- `stock-bot/requirements`
+- `stock-bot/services/`
+- `stock-bot/strategies`
 
 ## 📫 **Contacto**
 
