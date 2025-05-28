@@ -9,9 +9,8 @@ def main():
             subject="📢 Alerta Manual",
             body="Se ha enviado esta alerta porque el usuario ingresó 1."
         )
-        print("✅ Correo enviado.")
     else:
-        print("❌ Opción inválida. No se envió nada.")
+        print("❌ Opción inválida")
 
 if __name__ == "__main__":
     main()
