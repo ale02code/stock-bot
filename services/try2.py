@@ -2,6 +2,13 @@ import yfinance as yf
 import pandas as pd
 import mplfinance as mpf
 
+# Función auxiliar para extraer valor escalar de pd.Series o float
+def extraer_valor(serie_o_valor):
+    if isinstance(serie_o_valor, pd.Series):
+        return float(serie_o_valor.iloc[0])
+    else:
+        return float(serie_o_valor)
+
 # ======================================
 # Paso 1: Descargar datos SPY
 # ======================================
@@ -24,11 +31,10 @@ def detectar_martillos_confirmados(df):
         try:
             vela = df.iloc[i]
 
-            # Extraer valores escalar correctamente
-            open_ = float(vela['Open'])
-            close = float(vela['Close'])
-            high = float(vela['High'])
-            low = float(vela['Low'])
+            open_ = extraer_valor(vela['Open'])
+            close = extraer_valor(vela['Close'])
+            high = extraer_valor(vela['High'])
+            low = extraer_valor(vela['Low'])
 
             cuerpo = abs(close - open_)
             mecha_sup = high - max(open_, close)
@@ -46,23 +52,15 @@ def detectar_martillos_confirmados(df):
 
             if es_martillo:
                 vela_siguiente = df.iloc[i + 1]
-                next_open = float(vela_siguiente['Open'])
-                next_close = float(vela_siguiente['Close'])
+                next_open = extraer_valor(vela_siguiente['Open'])
+                next_close = extraer_valor(vela_siguiente['Close'])
 
                 confirmada = next_close > next_open and next_close > close
 
                 if confirmada:
-                    # DEBUG: Medias móviles para esta señal
-                    mp20 = df.iloc[i]['MP20']
-                    mp40 = df.iloc[i]['MP40']
+                    mp20 = extraer_valor(vela['MP20'])
+                    mp40 = extraer_valor(vela['MP40'])
 
-                    # Extraer valores escalares si son Series
-                    if isinstance(mp20, pd.Series):
-                        mp20 = mp20.iloc[0]
-                    if isinstance(mp40, pd.Series):
-                        mp40 = mp40.iloc[0]
-
-                    # Verificar que no sean NaN y aplicar condición MP20 > MP40
                     if pd.notna(mp20) and pd.notna(mp40) and mp20 > mp40:
                         señales.append({
                             'Fecha': df.index[i],
@@ -104,25 +102,40 @@ def graficar_señales(df, señales_df):
 
         data_ventana = df.iloc[inicio:fin].copy()
 
-        # Verificar columnas OHLC
-        ohlc_cols = ['Open', 'High', 'Low', 'Close']
-        if not all(col in data_ventana.columns for col in ohlc_cols):
-            print("No se encontraron todas las columnas OHLC, verifica los nombres de columnas.")
+        # Detectar si columnas son MultiIndex y aplanar a nombres simples
+        if isinstance(data_ventana.columns, pd.MultiIndex):
+            # Tomamos solo el primer nivel (por ejemplo 'Open', 'High', ...)
+            data_ventana.columns = data_ventana.columns.get_level_values(0)
+        
+        cols_ohlc = ['Open', 'High', 'Low', 'Close']
+
+        # Verificar que todas las columnas OHLC estén presentes
+        if not all(col in data_ventana.columns for col in cols_ohlc):
+            print(f"⚠️ No se encuentran todas las columnas OHLC en ventana para señal en {fecha}")
             continue
 
-        # Convertir a numérico y limpiar NaNs
-        data_ventana[ohlc_cols] = data_ventana[ohlc_cols].apply(pd.to_numeric, errors='coerce')
-        data_ventana.dropna(subset=ohlc_cols, inplace=True)
+        # Convertir a numérico, forzando errores a NaN
+        data_ventana[cols_ohlc] = data_ventana[cols_ohlc].apply(pd.to_numeric, errors='coerce')
+
+        # Eliminar filas con NaN en columnas OHLC
+        data_ventana.dropna(subset=cols_ohlc, inplace=True)
+
+        if data_ventana.empty:
+            print(f"⚠️ Ventana vacía tras limpiar NaNs para señal en {fecha}")
+            continue
+
+        # Asegurar índice datetime
+        data_ventana.index = pd.to_datetime(data_ventana.index)
+
+        data_plot = data_ventana[cols_ohlc].copy()
 
         mpf.plot(
-            data_ventana,
+            data_plot,
             type='candle',
             style='charles',
             title=f"Martillo confirmado el {fecha.date()}",
             ylabel='Precio SPY (USD)',
-            addplot=[
-                mpf.make_addplot([señal['Low']] * len(data_ventana), color='red', linestyle='--')
-            ]
+            addplot=[mpf.make_addplot([señal['Low']] * len(data_plot), color='red', linestyle='--')]
         )
 
 if not señales_detectadas.empty:
