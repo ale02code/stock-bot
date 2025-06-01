@@ -87,11 +87,34 @@ if ahora_est.hour >= 11:
         print(f"  📆 {última_señal['Fecha'].strftime('%Y-%m-%d %H:%M')} | 🔽 Soporte: ${última_señal['Low']:.2f}")
 
         send_email(
-            subject="🚨 ¡SEÑAL - MARTILLO CONFIRMADO! 🚨",
-            body=f"Señal detectada el {última_señal['Fecha'].strftime('%Y-%m-%d %H:%M')}:\n"
-                 f"🔽 Soporte: ${última_señal['Low']:.2f}\n"
-                 f"📈 Cierre: ${última_señal['Close']:.2f}\n"
-                 "✅ Acción: Considerar compra de CALL ATM"
+            subject="🚨 ¡SEÑAL - PISO FUERTE DETECTADO! 🚨",
+            body = f"""
+        ¡Hola! 👋
+        Se ha detectado una señal de trading en el cual se cumple con la estrategia de piso fuerte en SPY. Le adjunto los detalles:
+
+        ---
+
+        📅 Fecha y Hora (EST): {última_señal['Fecha'].strftime('%Y-%m-%d %H:%M')}
+        📊 Símbolo: SPY (ETF S&P 500)
+
+        📉 Medias Móviles:
+            - MP100 (100 periodos): {spy['MP20'].iloc[última_señal['Index']]:.2f}
+            - MP200 (200 periodos): {spy['MP40'].iloc[última_señal['Index']]:.2f}
+
+        ✅ Condiciones cumplidas:
+            - Patrón martillo detectado 🕯️
+            - Confirmación alcista con la vela siguiente ✅
+            - MP100 > MP200 (tendencia alcista) 📈
+
+        🎯 Acción recomendada: Considerar compra de opción CALL ATM
+
+        📌 Nota:
+            - La señal se detectó solo después de las 11:00 AM EST.
+            - Esta estrategia utiliza confirmación de patrón martillo para validar posibles puntos de   entrada.
+            - Recuerda siempre aplicar gestión de riesgo adecuada.
+        --- 
+            ¡Mucho éxito y buen trading! 📈💪
+        """
         )
     else:
         print("❌ No se detectaron señales completas en el período analizado.")
