@@ -15,6 +15,7 @@ config.py  # Solo si contiene credenciales
 __pycache__/
 *.py[cod]
 *$py.class
+dist/
 
 # Archivos de IDE y editores
 .idea/
